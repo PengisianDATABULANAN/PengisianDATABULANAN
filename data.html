@@ -15,20 +15,19 @@
             font-family: Arial, sans-serif;
             background-color: #222; /* Warna latar belakang lebih gelap */
             color: #eee; /* Warna teks lebih terang */
+            margin: 0;
         }
         h1 {
             font-weight: bold;
             margin-bottom: 20px;
         }
         select, textarea, button {
-            font-size: 1.5em; /* Ukuran font lebih besar */
+            font-size: 1.2em;
             padding: 10px;
             margin: 10px 0;
             width: 300px;
             border-radius: 5px;
-            border: 1px solid #444;
-            background-color: #333; /* Warna latar belakang untuk input */
-            color: #fff; /* Warna teks untuk input */
+            border: 1px solid #ccc;
         }
         button {
             background-color: #4CAF50;
@@ -39,20 +38,20 @@
             background-color: #45a049;
         }
         .notification {
-            display: none;
             background-color: white;
             color: black;
-            padding: 10px;
+            padding: 15px;
             border-radius: 5px;
-            position: fixed;
-            top: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 1000;
+            margin-bottom: 20px;
+            display: none; /* Sembunyikan notifikasi secara default */
+            position: absolute;
+            top: 20px; /* Jarak dari atas */
+            z-index: 1; /* Pastikan di atas elemen lain */
         }
     </style>
 </head>
 <body>
+    <div class="notification" id="notification">Masih Uji Coba</div>
     <h1>Pengisian Data Bulanan</h1>
     <label for="month">Pilih Bulan:</label>
     <select id="month">
@@ -77,11 +76,10 @@
     <button onclick="saveData()">Simpan ke Excel</button>
     <button onclick="clearData()">Hapus Semua Data</button>
 
-    <div class="notification" id="notification">Masih Uji Coba</div>
-
     <script>
         const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
         const monthData = JSON.parse(localStorage.getItem('monthData')) || {};
+        const userName = localStorage.getItem('userName');
 
         // Inisialisasi data bulan
         monthNames.forEach(month => {
@@ -90,12 +88,24 @@
             }
         });
 
-        // Menampilkan notifikasi
-        const notification = document.getElementById('notification');
-        notification.style.display = 'block';
-        setTimeout(() => {
-            notification.style.display = 'none';
-        }, 15000); // Tampilkan selama 15 detik
+        // Menampilkan nama pengguna
+        if (userName) {
+            alert(`Hai ${userName}, selamat datang!`);
+        } else {
+            alert("Silakan masukkan nama Anda di halaman awal.");
+            window.location.href = 'index.html'; // Kembali ke halaman input nama jika nama tidak ada
+        }
+
+        // Tampilkan notifikasi
+        function showNotification() {
+            const notification = document.getElementById('notification');
+            notification.style.display = 'block'; // Tampilkan notifikasi
+            setTimeout(() => {
+                notification.style.display = 'none'; // Sembunyikan setelah 15 detik
+            }, 15000); // 15000 ms = 15 detik
+        }
+
+        showNotification(); // Panggil fungsi notifikasi
 
         function addData() {
             const month = document.getElementById('month').value;
@@ -115,14 +125,17 @@
         function saveData() {
             const wb = XLSX.utils.book_new();
             const wsData = [];
+
+            // Menyusun header bulan
             wsData.push(monthNames);
 
-            const maxLength = Math.max(...Object.values(monthData).map(arr => arr.length));
+            // Menyusun data untuk satu sheet
+            const maxLength = Math.max(...Object.values(monthData).map(arr => arr.length)); // Mencari panjang maksimum
 
             for (let i = 0; i < maxLength; i++) {
                 const row = [];
                 monthNames.forEach(month => {
-                    row.push(monthData[month][i] || '');
+                    row.push(monthData[month][i] || ''); // Menambahkan data atau kosong jika tidak ada
                 });
                 wsData.push(row);
             }
@@ -130,24 +143,7 @@
             const ws = XLSX.utils.aoa_to_sheet(wsData);
             XLSX.utils.book_append_sheet(wb, ws, 'Data Bulanan');
 
-            const wbout = XLSX.write(wb, {bookType: 'xlsx', type: 'binary'});
-            const blob = new Blob([s2ab(wbout)], {type: 'application/octet-stream'});
-
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = 'Data RM Rumah Sakit.xlsx';
-            link.click();
-            URL.revokeObjectURL(link.href); // Membebaskan URL setelah unduhan
-        }
-
-        // Fungsi untuk mengonversi string ke ArrayBuffer
-        function s2ab(s) {
-            const buf = new ArrayBuffer(s.length);
-            const view = new Uint8Array(buf);
-            for (let i = 0; i < s.length; i++) {
-                view[i] = s.charCodeAt(i) & 0xFF;
-            }
-            return buf;
+            XLSX.writeFile(wb, 'Data RM Rumah Sakit.xlsx'); // Mengubah nama file
         }
 
         function clearData() {
