@@ -62,7 +62,78 @@
             color: rgba(255, 255, 255, 0.5); /* Warna dan transparansi watermark */
             pointer-events: none; /* Agar tidak mengganggu interaksi */
         }
+        #userList {
+            list-style-type: none;
+            padding: 0;
+        }
     </style>
+    <script type="module">
+        // Import Firebase functions
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
+        import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyC40GO-c8630zQgfEZmzF66x2QFD4C_9_8",
+            authDomain: "pengisiandatabulanan.firebaseapp.com",
+            databaseURL: "https://pengisiandatabulanan-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "pengisiandatabulanan",
+            storageBucket: "pengisiandatabulanan.appspot.com",
+            messagingSenderId: "482794556347",
+            appId: "1:482794556347:web:5f979a5f806bb2cb4a529e",
+            measurementId: "G-RNN44KPRV4"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // Function to submit the name
+        window.submitName = function() {
+            const name = document.getElementById('userName').value.trim();
+            if (name) {
+                // Save name to Firebase
+                set(ref(db, 'users/' + name), {
+                    username: name
+                })
+                .then(() => {
+                    localStorage.setItem('userName', name);
+                    fetchData(); // Panggil untuk mengambil data terbaru
+                })
+                .catch((error) => {
+                    alert("Error: " + error.message);
+                });
+            } else {
+                alert("Silakan masukkan nama Anda.");
+            }
+        };
+
+        // Function to fetch data from Firebase
+        function fetchData() {
+            const dbRef = ref(db);
+            get(child(dbRef, 'users/'))
+                .then((snapshot) => {
+                    if (snapshot.exists()) {
+                        const users = snapshot.val();
+                        let userList = document.getElementById('userList');
+                        userList.innerHTML = ''; // Kosongkan daftar sebelum menambahkan
+                        for (const user in users) {
+                            const li = document.createElement('li');
+                            li.textContent = users[user].username; // Menampilkan nama pengguna
+                            userList.appendChild(li);
+                        }
+                    } else {
+                        console.log("No data available");
+                    }
+                })
+                .catch((error) => {
+                    console.error(error);
+                });
+        }
+
+        // Panggil fungsi fetchData saat halaman dimuat
+        window.onload = fetchData;
+    </script>
 </head>
 <body>
     <div class="container">
@@ -70,18 +141,10 @@
         <input type="text" id="userName" placeholder="Masukkan nama Anda" />
         <button onclick="submitName()">Kirim</button>
     </div>
+    <div class="container">
+        <h2>Daftar Pengguna</h2>
+        <ul id="userList"></ul> <!-- Daftar untuk menampilkan pengguna -->
+    </div>
     <div class="watermark">Created By Rendyseftia</div> <!-- Watermark di atas kiri -->
-
-    <script>
-        function submitName() {
-            const name = document.getElementById('userName').value.trim();
-            if (name) {
-                localStorage.setItem('userName', name);
-                window.location.href = 'data'; // Pindah ke halaman data tanpa .html
-            } else {
-                alert("Silakan masukkan nama Anda.");
-            }
-        }
-    </script>
 </body>
 </html>
