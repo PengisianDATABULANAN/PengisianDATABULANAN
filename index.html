@@ -12,28 +12,28 @@
             justify-content: center;
             height: 100vh;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #181818;
-            color: #f0f0f0;
+            background-color: #181818; /* Warna latar belakang lebih gelap */
+            color: #f0f0f0; /* Warna teks lebih terang */
             margin: 0;
             padding: 20px;
-            position: relative;
+            position: relative; /* Tambahkan posisi relative untuk watermark */
         }
         h1 {
             font-weight: bold;
             margin-bottom: 20px;
-            font-size: 2em;
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+            font-size: 2em; /* Ukuran font lebih besar */
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5); /* Bayangan teks */
         }
         input {
             font-size: 1.5em;
             padding: 10px;
             margin: 10px 0;
-            width: 100%;
-            max-width: 400px;
+            width: 100%; /* Lebar penuh */
+            max-width: 400px; /* Maksimal lebar */
             border-radius: 5px;
             border: 1px solid #444;
-            background-color: #333;
-            color: #fff;
+            background-color: #333; /* Warna latar belakang untuk input */
+            color: #fff; /* Warna teks untuk input */
         }
         button {
             font-size: 1.2em;
@@ -45,7 +45,7 @@
             color: white;
             cursor: pointer;
             transition: background-color 0.3s;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3); /* Bayangan tombol */
         }
         button:hover {
             background-color: #45a049;
@@ -55,52 +55,46 @@
         }
         .watermark {
             position: absolute;
-            top: 10px;
-            left: 10px;
-            font-size: 1.5em;
-            font-family: 'Times New Roman', Times, serif;
-            color: rgba(255, 255, 255, 0.5);
-            pointer-events: none;
+            top: 10px; /* Jarak dari atas */
+            left: 10px; /* Jarak dari kiri */
+            font-size: 1.5em; /* Ukuran font lebih besar */
+            font-family: 'Times New Roman', Times, serif; /* Menggunakan font Times New Roman */
+            color: rgba(255, 255, 255, 0.5); /* Warna dan transparansi watermark */
+            pointer-events: none; /* Agar tidak mengganggu interaksi */
         }
         #userList {
             list-style-type: none;
             padding: 0;
         }
-        .overlay {
+        #overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(255, 255, 255, 0.8);
+            background: rgba(255, 255, 255, 0.8);
             display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 10;
+            z-index: 1000; /* Agar overlay di atas konten lainnya */
+        }
+        #overlayMessage {
+            text-align: center;
             font-size: 1.5em;
-            color: #000;
-            display: none; /* Sembunyikan overlay secara default */
         }
-        .overlay.active {
-            display: flex; /* Tampilkan overlay jika aktif */
-        }
-        .clear-button {
-            margin-left: 10px; /* Tambahkan jarak antara nama dan tombol hapus */
-        }
-        .ok-button {
+        #overlay button {
+            margin-top: 20px;
             background-color: red;
-            color: white;
             border: none;
+            color: white;
             padding: 10px 20px;
             border-radius: 5px;
             cursor: pointer;
-            font-size: 1.2em;
-            margin-top: 20px;
         }
     </style>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
-        import { getDatabase, ref, set, get, child, remove } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-database.js";
+        import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyC40GO-c8630zQgfEZmzF66x2QFD4C_9_8",
@@ -116,11 +110,6 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        window.onload = function() {
-            document.getElementById('overlay').classList.add('active'); // Tampilkan overlay saat halaman dimuat
-            fetchData();
-        };
-
         window.submitName = function() {
             const name = document.getElementById('userName').value.trim();
             if (name) {
@@ -130,7 +119,7 @@
                 .then(() => {
                     console.log('Data berhasil ditambahkan untuk: ' + name);
                     localStorage.setItem('userName', name);
-                    window.location.href = 'data.html'; // Arahkan ke halaman data
+                    window.location.href = "data.html"; // Pindah ke data.html
                 })
                 .catch((error) => {
                     alert("Error: " + error.message);
@@ -140,6 +129,11 @@
             }
         };
 
+        window.onload = function() {
+            fetchData();
+            document.getElementById('overlay').style.display = 'flex'; // Tampilkan overlay
+        };
+
         function fetchData() {
             const dbRef = ref(db);
             get(child(dbRef, 'users/'))
@@ -147,15 +141,10 @@
                     if (snapshot.exists()) {
                         const users = snapshot.val();
                         let userList = document.getElementById('userList');
-                        userList.innerHTML = '';
+                        userList.innerHTML = ''; // Kosongkan daftar sebelum menambahkan
                         for (const user in users) {
                             const li = document.createElement('li');
-                            li.textContent = users[user].username; 
-                            const clearButton = document.createElement('button');
-                            clearButton.textContent = 'Hapus';
-                            clearButton.className = 'clear-button';
-                            clearButton.onclick = () => deleteUser(user);
-                            li.appendChild(clearButton);
+                            li.textContent = users[user].username; // Menampilkan nama pengguna
                             userList.appendChild(li);
                         }
                     } else {
@@ -167,27 +156,16 @@
                 });
         }
 
-        function deleteUser(user) {
-            remove(ref(db, 'users/' + user))
-                .then(() => {
-                    console.log('Data berhasil dihapus untuk: ' + user);
-                    fetchData(); // Ambil data terbaru setelah penghapusan
-                })
-                .catch((error) => {
-                    console.error('Error menghapus data: ', error);
-                });
-        }
-
         function closeOverlay() {
-            document.getElementById('overlay').classList.remove('active'); // Hapus overlay saat tombol "OK" ditekan
+            document.getElementById('overlay').style.display = 'none'; // Sembunyikan overlay
         }
     </script>
 </head>
 <body>
-    <div class="overlay" id="overlay">
-        <div>
-            INGAT!! Masukkan nama pengguna yang benar agar data tidak hilang.
-            <button class="ok-button" onclick="closeOverlay()">OK</button>
+    <div id="overlay">
+        <div id="overlayMessage">
+            <p>INGAT!! Masukkan nama pengguna yang benar agar data tidak hilang.</p>
+            <button onclick="closeOverlay()">OK</button>
         </div>
     </div>
     <div class="container">
@@ -199,6 +177,6 @@
         <h2>Daftar Pengguna</h2>
         <ul id="userList"></ul> <!-- Daftar untuk menampilkan pengguna -->
     </div>
-    <div class="watermark">Created By Rendyseftia</div>
+    <div class="watermark">Created By Rendyseftia</div> <!-- Watermark di atas kiri -->
 </body>
 </html>
