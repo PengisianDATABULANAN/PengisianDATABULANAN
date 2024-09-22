@@ -65,14 +65,6 @@
         #userList {
             list-style-type: none;
             padding: 0;
-            margin-top: 10px;
-        }
-        #userList li {
-            background: #333;
-            color: #f0f0f0;
-            padding: 10px;
-            margin: 5px 0;
-            border-radius: 5px;
         }
     </style>
     <script type="module">
@@ -100,25 +92,17 @@
         window.submitName = function() {
             const name = document.getElementById('userName').value.trim();
             if (name) {
-                // Cek apakah nama pengguna sudah ada
-                const dbRef = ref(db);
-                get(child(dbRef, 'users/' + name)).then((snapshot) => {
-                    if (snapshot.exists()) {
-                        alert("Nama pengguna sudah ada. Silakan pilih nama lain.");
-                    } else {
-                        // Save name to Firebase
-                        set(ref(db, 'users/' + name), {
-                            username: name
-                        })
-                        .then(() => {
-                            localStorage.setItem('userName', name);
-                            fetchData(); // Panggil untuk mengambil data terbaru
-                            alert("Nama pengguna berhasil ditambahkan!");
-                        })
-                        .catch((error) => {
-                            alert("Error: " + error.message);
-                        });
-                    }
+                // Save name to Firebase
+                set(ref(db, 'users/' + name), {
+                    username: name
+                })
+                .then(() => {
+                    console.log('Data berhasil ditambahkan untuk: ' + name);
+                    localStorage.setItem('userName', name);
+                    fetchData(); // Panggil untuk mengambil data terbaru
+                })
+                .catch((error) => {
+                    alert("Error: " + error.message);
                 });
             } else {
                 alert("Silakan masukkan nama Anda.");
