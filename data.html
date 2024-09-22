@@ -5,6 +5,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pengisian Data Bulanan</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+    <script type="module">
+        // Impor Firebase SDK
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
+        import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-database.js";
+
+        // Konfigurasi Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyC40GO-c8630zQgfEZmzF66x2QFD4C_9_8",
+            authDomain: "pengisiandatabulanan.firebaseapp.com",
+            databaseURL: "https://pengisiandatabulanan-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "pengisiandatabulanan",
+            storageBucket: "pengisiandatabulanan.appspot.com",
+            messagingSenderId: "482794556347",
+            appId: "1:482794556347:web:7decfa15407ee9344a529e",
+            measurementId: "G-B4SEEMZV16"
+        };
+
+        // Inisialisasi Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+    </script>
     <style>
         body {
             display: flex;
@@ -45,7 +66,7 @@
 <body>
     <h1>Pengisian Data Bulanan</h1>
     <div class="container">
-        <form method="post">
+        <form id="dataForm">
             <label for="month">Pilih Bulan:</label>
             <select id="month" name="month">
                 {% for month in month_names %}
@@ -54,7 +75,8 @@
             </select>
 
             <textarea id="dataInput" name="data_input" rows="5" placeholder="Masukkan data, pisahkan dengan Enter"></textarea>
-            <button type="submit">Tambah Data</button>
+            <button type="button" id="addDataButton">Tambah Data</button>
+            <button type="button" onclick="fetchData()">Ambil Data</button>
         </form>
 
         <button onclick="saveData()">Simpan ke Excel</button>
@@ -63,7 +85,51 @@
 
     <script>
         const monthData = {{ month_data|tojson }};
-        
+
+        // Fungsi untuk menambahkan data ke Firebase
+        function addData() {
+            const month = document.getElementById('month').value;
+            const data = document.getElementById('dataInput').value.trim();
+
+            if (data) {
+                const values = data.split('\n').map(d => d.trim()).filter(d => d);
+                const monthRef = ref(db, `data/${month}`);
+                set(monthRef, values)
+                    .then(() => {
+                        alert(`Data ditambahkan untuk bulan ${month}.`);
+                        document.getElementById('dataInput').value = ''; // Kosongkan input
+                    })
+                    .catch((error) => {
+                        console.error('Error menyimpan data ke Firebase:', error);
+                    });
+            } else {
+                alert('Masukkan data yang valid.');
+            }
+        }
+
+        // Hubungkan tombol tambah data
+        document.getElementById('addDataButton').onclick = addData;
+
+        // Fungsi untuk mengambil data dari Firebase
+        function fetchData() {
+            const month = document.getElementById('month').value;
+            const monthRef = ref(db, `data/${month}`);
+
+            get(monthRef)
+                .then((snapshot) => {
+                    if (snapshot.exists()) {
+                        const values = snapshot.val();
+                        document.getElementById('dataInput').value = values.join('\n'); // Menampilkan data di textarea
+                    } else {
+                        alert('Tidak ada data untuk bulan ini.');
+                    }
+                })
+                .catch((error) => {
+                    console.error('Error mengambil data dari Firebase:', error);
+                });
+        }
+
+        // Fungsi untuk menyimpan data ke Excel
         function saveData() {
             const wb = XLSX.utils.book_new();
             const wsData = [];
@@ -84,6 +150,7 @@
             XLSX.writeFile(wb, 'Data RM Rumah Sakit.xlsx');
         }
 
+        // Fungsi untuk menghapus semua data
         function clearData() {
             if (confirm("Apakah Anda yakin ingin menghapus semua data?")) {
                 // Kosongkan data di sini (tambahkan logika jika perlu)
