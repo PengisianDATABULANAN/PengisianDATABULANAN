@@ -100,6 +100,9 @@
             const month = document.getElementById('month').value;
             const data = document.getElementById('dataInput').value.trim();
 
+            console.log('Adding data for month:', month);
+            console.log('Input data:', data);
+
             if (data) {
                 const values = data.split('\n').map(d => d.trim()).filter(d => d);
                 monthData[month].push(...values);
@@ -130,6 +133,7 @@
             XLSX.utils.book_append_sheet(wb, ws, 'Data Bulanan');
 
             XLSX.writeFile(wb, 'Data RM Rumah Sakit.xlsx');
+            console.log('File downloaded: Data RM Rumah Sakit.xlsx');
         }
 
         function clearData() {
