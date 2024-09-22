@@ -44,15 +44,15 @@
             color: black;
             padding: 10px;
             border-radius: 5px;
-            position: absolute;
+            position: fixed;
             top: 10px;
             left: 50%;
             transform: translateX(-50%);
+            z-index: 1000;
         }
     </style>
 </head>
 <body>
-    <div class="notification" id="notification">Masih Uji Coba</div>
     <h1>Pengisian Data Bulanan</h1>
     <label for="month">Pilih Bulan:</label>
     <select id="month">
@@ -77,6 +77,8 @@
     <button onclick="saveData()">Simpan ke Excel</button>
     <button onclick="clearData()">Hapus Semua Data</button>
 
+    <div class="notification" id="notification">Masih Uji Coba</div>
+
     <script>
         const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
         const monthData = JSON.parse(localStorage.getItem('monthData')) || {};
@@ -89,12 +91,19 @@
             }
         });
 
+        // Menampilkan notifikasi
+        const notification = document.getElementById('notification');
+        notification.style.display = 'block';
+        setTimeout(() => {
+            notification.style.display = 'none';
+        }, 15000); // Tampilkan selama 15 detik
+
         // Menampilkan nama pengguna
         if (userName) {
             alert(`Hai ${userName}, selamat datang!`);
         } else {
             alert("Silakan masukkan nama Anda di halaman awal.");
-            window.location.href = 'index'; // Kembali ke halaman input nama jika nama tidak ada
+            window.location.href = 'index.html'; // Kembali ke halaman input nama jika nama tidak ada
         }
 
         function addData() {
@@ -115,17 +124,14 @@
         function saveData() {
             const wb = XLSX.utils.book_new();
             const wsData = [];
-
-            // Menyusun header bulan
             wsData.push(monthNames);
 
-            // Menyusun data untuk satu sheet
-            const maxLength = Math.max(...Object.values(monthData).map(arr => arr.length)); // Mencari panjang maksimum
+            const maxLength = Math.max(...Object.values(monthData).map(arr => arr.length));
 
             for (let i = 0; i < maxLength; i++) {
                 const row = [];
                 monthNames.forEach(month => {
-                    row.push(monthData[month][i] || ''); // Menambahkan data atau kosong jika tidak ada
+                    row.push(monthData[month][i] || '');
                 });
                 wsData.push(row);
             }
@@ -133,9 +139,24 @@
             const ws = XLSX.utils.aoa_to_sheet(wsData);
             XLSX.utils.book_append_sheet(wb, ws, 'Data Bulanan');
 
-            // Simpan file
-            XLSX.writeFile(wb, 'Data RM Rumah Sakit.xlsx'); // Mengubah nama file
-            showNotification("File sedang diunduh.");
+            const wbout = XLSX.write(wb, {bookType: 'xlsx', type: 'binary'});
+            const blob = new Blob([s2ab(wbout)], {type: 'application/octet-stream'});
+
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'Data RM Rumah Sakit.xlsx';
+            link.click();
+            URL.revokeObjectURL(link.href); // Membebaskan URL setelah unduhan
+        }
+
+        // Fungsi untuk mengonversi string ke ArrayBuffer
+        function s2ab(s) {
+            const buf = new ArrayBuffer(s.length);
+            const view = new Uint8Array(buf);
+            for (let i = 0; i < s.length; i++) {
+                view[i] = s.charCodeAt(i) & 0xFF;
+            }
+            return buf;
         }
 
         function clearData() {
@@ -146,16 +167,6 @@
                 localStorage.removeItem('monthData'); // Hapus data dari localStorage
                 alert("Semua data telah dihapus.");
             }
-        }
-
-        function showNotification(message) {
-            const notification = document.getElementById('notification');
-            notification.textContent = message;
-            notification.style.display = 'block';
-
-            setTimeout(() => {
-                notification.style.display = 'none';
-            }, 15000); // Tampilkan selama 15 detik
         }
     </script>
 </body>
