@@ -6,11 +6,10 @@
     <title>Pengisian Data Bulanan</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
     <script type="module">
-        // Impor Firebase modules
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-app.js";
-        import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-database.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
+        import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-database.js";
 
-        // Konfigurasi Firebase
+        // Konfigurasi Firebase Anda
         const firebaseConfig = {
             apiKey: "AIzaSyC40GO-c8630zQgfEZmzF66x2QFD4C_9_8",
             authDomain: "pengisiandatabulanan.firebaseapp.com",
@@ -24,53 +23,51 @@
 
         // Inisialisasi Firebase
         const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app); // Inisialisasi database
-
-        // Fungsi untuk menyimpan data ke Firebase
-        function saveDataToFirebase(month, values) {
-            const userName = localStorage.getItem('userName');
-            if (!userName) {
-                alert('Nama pengguna tidak ditemukan.');
-                return;
-            }
-
-            const monthRef = ref(db, `data/${userName}/${month}`);
-            set(monthRef, values)
-                .then(() => {
-                    console.log('Data berhasil disimpan ke Firebase.');
-                })
-                .catch((error) => {
-                    console.error('Error menyimpan data ke Firebase:', error);
-                });
-        }
-
-        // Fungsi untuk menambahkan data
-        function addData() {
-            const month = document.getElementById('month').value;
-            const data = document.getElementById('dataInput').value.trim();
-
-            if (data) {
-                const values = data.split('\n').map(d => d.trim()).filter(d => d);
-                if (!monthData[month]) {
-                    monthData[month] = [];
-                }
-                monthData[month].push(...values);
-                document.getElementById('dataInput').value = ''; // Kosongkan input setelah menambah data
-                localStorage.setItem('monthData', JSON.stringify(monthData)); // Simpan data ke localStorage
-
-                saveDataToFirebase(month, values); // Simpan data juga ke Firebase
-                alert(`Data berhasil ditambahkan untuk bulan ${month}.`);
-            } else {
-                alert('Masukkan data yang valid.');
-            }
-        }
-
-        window.addEventListener('load', () => {
-            document.getElementById('addDataButton').onclick = addData;
-        });
+        const db = getDatabase(app);
     </script>
     <style>
-        /* CSS seperti sebelumnya */
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+            background-color: #222;
+            color: #eee;
+            margin: 0;
+        }
+        h1 {
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        select, textarea, button {
+            font-size: 1.2em;
+            padding: 10px;
+            margin: 10px 0;
+            width: 300px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .notification {
+            background-color: white;
+            color: black;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: none;
+            position: absolute;
+            top: 20px;
+            z-index: 1;
+        }
     </style>
 </head>
 <body>
@@ -95,7 +92,7 @@
     <br>
     <textarea id="dataInput" rows="5" placeholder="Masukkan data, pisahkan dengan Enter"></textarea>
     <br>
-    <button id="addDataButton">Tambah Data</button>
+    <button onclick="addData()">Tambah Data</button>
     <button onclick="saveData()">Simpan ke Excel</button>
     <button onclick="clearData()">Hapus Semua Data</button>
 
@@ -104,14 +101,77 @@
         const monthData = JSON.parse(localStorage.getItem('monthData')) || {};
         const userName = localStorage.getItem('userName');
 
+        // Inisialisasi data bulan
+        monthNames.forEach(month => {
+            if (!monthData[month]) {
+                monthData[month] = [];
+            }
+        });
+
+        // Menampilkan nama pengguna
         if (userName) {
             alert(`Hai ${userName}, selamat datang!`);
         } else {
             alert("Silakan masukkan nama Anda di halaman awal.");
-            window.location.href = 'index.html';
+            window.location.href = 'index.html'; // Kembali ke halaman input nama jika nama tidak ada
         }
 
-        // Fungsi lainnya tetap sama
-    </script>
-</body>
-</html>
+        // Tampilkan notifikasi
+        function showNotification() {
+            const notification = document.getElementById('notification');
+            notification.style.display = 'block'; // Tampilkan notifikasi
+            setTimeout(() => {
+                notification.style.display = 'none'; // Sembunyikan setelah 15 detik
+            }, 15000); // 15000 ms = 15 detik
+        }
+
+        showNotification(); // Panggil fungsi notifikasi
+
+        function addData() {
+            const month = document.getElementById('month').value;
+            const data = document.getElementById('dataInput').value.trim();
+
+            if (data) {
+                const values = data.split('\n').map(d => d.trim()).filter(d => d);
+                monthData[month].push(...values);
+                document.getElementById('dataInput').value = ''; // Clear input field
+                localStorage.setItem('monthData', JSON.stringify(monthData)); // Simpan ke localStorage
+                saveDataToFirebase(month, values); // Simpan juga ke Firebase
+                alert(`Data ditambahkan untuk bulan ${month}.`);
+            } else {
+                alert('Masukkan data yang valid.');
+            }
+        }
+
+        function saveDataToFirebase(month, values) {
+            const monthRef = ref(db, `data/${userName}/${month}`);
+            set(monthRef, values)
+                .then(() => {
+                    console.log('Data berhasil disimpan ke Firebase.');
+                })
+                .catch((error) => {
+                    console.error('Error menyimpan data ke Firebase:', error);
+                });
+        }
+
+        // Fungsi untuk menyimpan data ke file Excel
+        function saveData() {
+            const wb = XLSX.utils.book_new(); // Buat workbook baru
+            const wsData = [monthNames]; // Baris pertama akan berisi nama-nama bulan
+
+            // Ambil data dari monthData dan masukkan ke worksheet
+            const maxRows = Math.max(...Object.values(monthData).map(data => data.length));
+            for (let i = 0; i < maxRows; i++) {
+                const row = monthNames.map(month => monthData[month]?.[i] || "");
+                wsData.push(row);
+            }
+
+            const ws = XLSX.utils.aoa_to_sheet(wsData); // Ubah array menjadi sheet Excel
+            XLSX.utils.book_append_sheet(wb, ws, "Data Bulanan"); // Tambah sheet ke workbook
+            XLSX.writeFile(wb, "Data RM Rumah Sakit.xlsx"); // Simpan workbook sebagai file Excel
+        }
+
+        function clearData() {
+            if (confirm("Apakah Anda yakin ingin menghapus semua data?")) {
+                monthNames.forEach(month => {
+                    monthData[
