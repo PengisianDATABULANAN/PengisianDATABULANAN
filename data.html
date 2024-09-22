@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pengisian Data Bulanan</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js"></script>
     <style>
         body {
             display: flex;
@@ -70,7 +72,9 @@
         <option value="Desember">Desember</option>
     </select>
 
+    <br>
     <textarea id="dataInput" rows="5" placeholder="Masukkan data, pisahkan dengan Enter"></textarea>
+    <br>
     <button onclick="addData()">Tambah Data</button>
     <button onclick="saveData()">Simpan ke Excel</button>
     <button onclick="clearData()">Hapus Semua Data</button>
@@ -78,31 +82,45 @@
     <div class="notification" id="notification">Masih Uji Coba</div>
 
     <script>
+        // Konfigurasi Firebase Anda
+        const firebaseConfig = {
+            apiKey: "AIzaSyC40GO-c8630zQgfEZmzF66x2QFD4C_9_8",
+            authDomain: "pengisiandatabulanan.firebaseapp.com",
+            databaseURL: "https://pengisiandatabulanan-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "pengisiandatabulanan",
+            storageBucket: "pengisiandatabulanan.appspot.com",
+            messagingSenderId: "482794556347",
+            appId: "1:482794556347:web:5f979a5f806bb2cb4a529e",
+            measurementId: "G-RNN44KPRV4"
+        };
+
+        // Inisialisasi Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        const monthData = {};
         const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
-        const monthData = JSON.parse(localStorage.getItem('monthData')) || {};
-        const userName = localStorage.getItem('userName');
 
-        // Inisialisasi data bulan
-        monthNames.forEach(month => {
-            if (!monthData[month]) {
-                monthData[month] = [];
-            }
-        });
+        // Mengambil data dari Firebase saat halaman dimuat
+        window.onload = function() {
+            monthNames.forEach(month => {
+                database.ref('data/' + month).once('value').then((snapshot) => {
+                    const data = snapshot.val();
+                    if (data) {
+                        monthData[month] = data;
+                    } else {
+                        monthData[month] = [];
+                    }
+                });
+            });
 
-        // Menampilkan notifikasi
-        const notification = document.getElementById('notification');
-        notification.style.display = 'block';
-        setTimeout(() => {
-            notification.style.display = 'none';
-        }, 15000); // Tampilkan selama 15 detik
-
-        // Menampilkan nama pengguna
-        if (userName) {
-            alert(`Hai ${userName}, selamat datang!`);
-        } else {
-            alert("Silakan masukkan nama Anda di halaman awal.");
-            window.location.href = 'index.html'; // Kembali ke halaman input nama jika nama tidak ada
-        }
+            // Menampilkan notifikasi
+            const notification = document.getElementById('notification');
+            notification.style.display = 'block';
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 15000); // Tampilkan selama 15 detik
+        };
 
         function addData() {
             const month = document.getElementById('month').value;
@@ -112,7 +130,7 @@
                 const values = data.split('\n').map(d => d.trim()).filter(d => d);
                 monthData[month].push(...values);
                 document.getElementById('dataInput').value = ''; // Clear input field
-                localStorage.setItem('monthData', JSON.stringify(monthData)); // Simpan ke localStorage
+                database.ref('data/' + month).set(monthData[month]); // Simpan data ke Firebase
                 alert(`Data ditambahkan untuk bulan ${month}.`);
             } else {
                 alert('Masukkan data yang valid.');
@@ -143,9 +161,7 @@
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
             link.download = 'Data RM Rumah Sakit.xlsx';
-            document.body.appendChild(link); // Tambahkan link ke DOM
             link.click();
-            document.body.removeChild(link); // Hapus link setelah di-klik
             URL.revokeObjectURL(link.href); // Membebaskan URL setelah unduhan
         }
 
@@ -163,8 +179,8 @@
             if (confirm("Apakah Anda yakin ingin menghapus semua data?")) {
                 monthNames.forEach(month => {
                     monthData[month] = []; // Kosongkan array untuk setiap bulan
+                    database.ref('data/' + month).set([]); // Hapus data dari Firebase
                 });
-                localStorage.removeItem('monthData'); // Hapus data dari localStorage
                 alert("Semua data telah dihapus.");
             }
         }
