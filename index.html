@@ -88,18 +88,18 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // Fungsi untuk mengirim nama
+        // Function to submit the name
         window.submitName = function() {
             const name = document.getElementById('userName').value.trim();
             if (name) {
-                // Simpan nama ke Firebase
+                // Save name to Firebase
                 set(ref(db, 'users/' + name), {
                     username: name
                 })
                 .then(() => {
                     console.log('Data berhasil ditambahkan untuk: ' + name);
                     localStorage.setItem('userName', name);
-                    window.location.href = 'data'; // Navigasi ke halaman data
+                    window.location.href = 'data.html'; // Navigasi ke halaman data.html
                 })
                 .catch((error) => {
                     alert("Error: " + error.message);
@@ -109,7 +109,7 @@
             }
         };
 
-        // Fungsi untuk mengambil data dari Firebase
+        // Function to fetch data from Firebase
         function fetchData() {
             const dbRef = ref(db);
             get(child(dbRef, 'users/'))
