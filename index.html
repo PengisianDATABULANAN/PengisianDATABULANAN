@@ -12,28 +12,28 @@
             justify-content: center;
             height: 100vh;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #181818; /* Warna latar belakang lebih gelap */
-            color: #f0f0f0; /* Warna teks lebih terang */
+            background-color: #181818;
+            color: #f0f0f0;
             margin: 0;
             padding: 20px;
-            position: relative; /* Tambahkan posisi relative untuk watermark */
+            position: relative;
         }
         h1 {
             font-weight: bold;
             margin-bottom: 20px;
-            font-size: 2em; /* Ukuran font lebih besar */
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5); /* Bayangan teks */
+            font-size: 2em;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
         }
         input {
             font-size: 1.5em;
             padding: 10px;
             margin: 10px 0;
-            width: 100%; /* Lebar penuh */
-            max-width: 400px; /* Maksimal lebar */
+            width: 100%;
+            max-width: 400px;
             border-radius: 5px;
             border: 1px solid #444;
-            background-color: #333; /* Warna latar belakang untuk input */
-            color: #fff; /* Warna teks untuk input */
+            background-color: #333;
+            color: #fff;
         }
         button {
             font-size: 1.2em;
@@ -45,7 +45,7 @@
             color: white;
             cursor: pointer;
             transition: background-color 0.3s;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3); /* Bayangan tombol */
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
         }
         button:hover {
             background-color: #45a049;
@@ -55,12 +55,12 @@
         }
         .watermark {
             position: absolute;
-            top: 10px; /* Jarak dari atas */
-            left: 10px; /* Jarak dari kiri */
-            font-size: 1.5em; /* Ukuran font lebih besar */
-            font-family: 'Times New Roman', Times, serif; /* Menggunakan font Times New Roman */
-            color: rgba(255, 255, 255, 0.5); /* Warna dan transparansi watermark */
-            pointer-events: none; /* Agar tidak mengganggu interaksi */
+            top: 10px;
+            left: 10px;
+            font-size: 1.5em;
+            font-family: 'Times New Roman', Times, serif;
+            color: rgba(255, 255, 255, 0.5);
+            pointer-events: none;
         }
         #userList {
             list-style-type: none;
@@ -68,11 +68,9 @@
         }
     </style>
     <script type="module">
-        // Import Firebase functions
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
         import { getDatabase, ref, set, get, child, remove } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-database.js";
 
-        // Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyC40GO-c8630zQgfEZmzF66x2QFD4C_9_8",
             authDomain: "pengisiandatabulanan.firebaseapp.com",
@@ -84,22 +82,19 @@
             measurementId: "G-B4SEEMZV16"
         };
 
-        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // Function to submit the name
         window.submitName = function() {
             const name = document.getElementById('userName').value.trim();
             if (name) {
-                // Save name to Firebase
                 set(ref(db, 'users/' + name), {
                     username: name
                 })
                 .then(() => {
                     console.log('Data berhasil ditambahkan untuk: ' + name);
                     localStorage.setItem('userName', name);
-                    fetchData(); // Panggil untuk mengambil data terbaru
+                    fetchData(); 
                 })
                 .catch((error) => {
                     alert("Error: " + error.message);
@@ -109,7 +104,6 @@
             }
         };
 
-        // Function to fetch data from Firebase
         function fetchData() {
             const dbRef = ref(db);
             get(child(dbRef, 'users/'))
@@ -117,19 +111,10 @@
                     if (snapshot.exists()) {
                         const users = snapshot.val();
                         let userList = document.getElementById('userList');
-                        userList.innerHTML = ''; // Kosongkan daftar sebelum menambahkan
+                        userList.innerHTML = '';
                         for (const user in users) {
                             const li = document.createElement('li');
-                            li.textContent = users[user].username; // Menampilkan nama pengguna
-                            
-                            // Buat tombol hapus
-                            const deleteButton = document.createElement('button');
-                            deleteButton.textContent = 'Hapus';
-                            deleteButton.onclick = function() {
-                                deleteUser(user);
-                            };
-                            
-                            li.appendChild(deleteButton); // Tambahkan tombol hapus ke list
+                            li.textContent = users[user].username; 
                             userList.appendChild(li);
                         }
                     } else {
@@ -141,19 +126,25 @@
                 });
         }
 
-        // Function to delete a user
-        function deleteUser(username) {
-            remove(ref(db, 'users/' + username))
-                .then(() => {
-                    console.log('Data berhasil dihapus untuk: ' + username);
-                    fetchData(); // Refresh daftar pengguna
-                })
-                .catch((error) => {
-                    console.error('Error removing document: ', error);
-                });
-        }
+        window.clearUsers = function() {
+            const dbRef = ref(db, 'users/');
+            get(dbRef).then((snapshot) => {
+                if (snapshot.exists()) {
+                    const users = snapshot.val();
+                    for (const user in users) {
+                        remove(ref(db, 'users/' + user))
+                            .then(() => {
+                                console.log('User ' + user + ' berhasil dihapus.');
+                                fetchData(); // Ambil data terbaru setelah penghapusan
+                            })
+                            .catch((error) => {
+                                console.error("Error removing user: ", error);
+                            });
+                    }
+                }
+            });
+        };
 
-        // Panggil fungsi fetchData saat halaman dimuat
         window.onload = fetchData;
     </script>
 </head>
@@ -162,11 +153,12 @@
         <h1>Input Nama Pengguna</h1>
         <input type="text" id="userName" placeholder="Masukkan nama Anda" />
         <button onclick="submitName()">Kirim</button>
+        <button onclick="clearUsers()">Clear User</button>
     </div>
     <div class="container">
         <h2>Daftar Pengguna</h2>
-        <ul id="userList"></ul> <!-- Daftar untuk menampilkan pengguna -->
+        <ul id="userList"></ul>
     </div>
-    <div class="watermark">Created By Rendyseftia</div> <!-- Watermark di atas kiri -->
+    <div class="watermark">Created By Rendyseftia</div>
 </body>
 </html>
