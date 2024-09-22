@@ -5,6 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pengisian Data Bulanan</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
+        import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-database.js";
+
+        // Konfigurasi Firebase Anda
+        const firebaseConfig = {
+            apiKey: "AIzaSyC40GO-c8630zQgfEZmzF66x2QFD4C_9_8",
+            authDomain: "pengisiandatabulanan.firebaseapp.com",
+            databaseURL: "https://pengisiandatabulanan-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "pengisiandatabulanan",
+            storageBucket: "pengisiandatabulanan.appspot.com",
+            messagingSenderId: "482794556347",
+            appId: "1:482794556347:web:7decfa15407ee9344a529e",
+            measurementId: "G-B4SEEMZV16"
+        };
+
+        // Inisialisasi Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+    </script>
     <style>
         body {
             display: flex;
@@ -116,10 +136,23 @@
                 monthData[month].push(...values);
                 document.getElementById('dataInput').value = ''; // Clear input field
                 localStorage.setItem('monthData', JSON.stringify(monthData)); // Simpan ke localStorage
+                saveDataToFirebase(month, values); // Simpan juga ke Firebase
                 alert(`Data ditambahkan untuk bulan ${month}.`);
             } else {
                 alert('Masukkan data yang valid.');
             }
+        }
+
+        function saveDataToFirebase(month, values) {
+            const db = getDatabase();
+            const monthRef = ref(db, `data/${userName}/${month}`);
+            set(monthRef, values)
+                .then(() => {
+                    console.log('Data berhasil disimpan ke Firebase.');
+                })
+                .catch((error) => {
+                    console.error('Error menyimpan data ke Firebase:', error);
+                });
         }
 
         function saveData() {
