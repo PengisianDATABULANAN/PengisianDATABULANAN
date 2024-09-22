@@ -70,9 +70,7 @@
         <option value="Desember">Desember</option>
     </select>
 
-    <br>
     <textarea id="dataInput" rows="5" placeholder="Masukkan data, pisahkan dengan Enter"></textarea>
-    <br>
     <button onclick="addData()">Tambah Data</button>
     <button onclick="saveData()">Simpan ke Excel</button>
     <button onclick="clearData()">Hapus Semua Data</button>
@@ -145,7 +143,9 @@
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
             link.download = 'Data RM Rumah Sakit.xlsx';
+            document.body.appendChild(link); // Tambahkan link ke DOM
             link.click();
+            document.body.removeChild(link); // Hapus link setelah di-klik
             URL.revokeObjectURL(link.href); // Membebaskan URL setelah unduhan
         }
 
