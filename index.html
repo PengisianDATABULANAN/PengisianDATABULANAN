@@ -69,10 +69,11 @@
     </style>
     <script type="module">
         // Import Firebase functions
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
-        import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-analytics.js";
+        import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-database.js";
 
-        // Firebase configuration
+        // Your web app's Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyC40GO-c8630zQgfEZmzF66x2QFD4C_9_8",
             authDomain: "pengisiandatabulanan.firebaseapp.com",
@@ -80,12 +81,13 @@
             projectId: "pengisiandatabulanan",
             storageBucket: "pengisiandatabulanan.appspot.com",
             messagingSenderId: "482794556347",
-            appId: "1:482794556347:web:5f979a5f806bb2cb4a529e",
-            measurementId: "G-RNN44KPRV4"
+            appId: "1:482794556347:web:7decfa15407ee9344a529e",
+            measurementId: "G-B4SEEMZV16"
         };
 
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
         const db = getDatabase(app);
 
         // Function to submit the name
