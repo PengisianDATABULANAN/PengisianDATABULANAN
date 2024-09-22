@@ -44,26 +44,26 @@
         button:hover {
             background-color: #45a049;
         }
-        .container {
-            text-align: center;
-        }
         .watermark {
             position: absolute;
-            top: 20px;
-            left: 20px;
-            font-size: 1.2em;
-            font-family: "Times New Roman", Times, serif;
-            color: rgba(255, 255, 255, 0.5);
+            top: 10px;
+            left: 10px;
+            font-family: "Times New Roman";
+            font-size: 1.2em; /* Ukuran lebih besar */
+            color: #fff; /* Warna putih */
+        }
+        .container {
+            text-align: center;
         }
     </style>
 </head>
 <body>
+    <div class="watermark">Created By Rendyseftia</div>
     <div class="container">
         <h1>Input Nama Pengguna</h1>
         <input type="text" id="userName" placeholder="Masukkan nama Anda" />
         <button onclick="submitName()">Kirim</button>
     </div>
-    <div class="watermark">Created By Rendyseftia</div>
 
     <script>
         function submitName() {
