@@ -119,7 +119,6 @@
                 })
                 .then(() => {
                     console.log('Data berhasil ditambahkan untuk: ' + name);
-                    localStorage.setItem('userName', name);
                     window.location.href = "data.html"; // Pindah ke data.html
                 })
                 .catch((error) => {
@@ -145,9 +144,6 @@
                         userList.innerHTML = ''; // Kosongkan daftar sebelum menambahkan
                         for (const user in users) {
                             const li = document.createElement('li');
-                            li.style.display = 'flex'; // Menggunakan flexbox
-                            li.style.justifyContent = 'space-between'; // Memberi jarak antar elemen
-                            li.style.alignItems = 'center'; // Vertikal align center
                             li.textContent = users[user].username; // Menampilkan nama pengguna
                             const deleteButton = document.createElement('button');
                             deleteButton.textContent = 'Hapus';
