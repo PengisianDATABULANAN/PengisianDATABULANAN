@@ -3,10 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pengisian Data Bulanan</title>
+    <title>Pengisian Data Excel</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js"></script>
     <style>
         body {
             display: flex;
@@ -15,22 +13,21 @@
             justify-content: center;
             height: 100vh;
             font-family: Arial, sans-serif;
-            background-color: #222; /* Warna latar belakang lebih gelap */
-            color: #eee; /* Warna teks lebih terang */
-            margin: 0;
+            background-color: #333; /* Latar belakang gelap */
+            color: #eee;
         }
         h1 {
             font-weight: bold;
             margin-bottom: 20px;
         }
         select, textarea, button {
-            font-size: 1.2em;
+            font-size: 1.5em;
             padding: 10px;
             margin: 10px 0;
             width: 300px;
             border-radius: 5px;
             border: 1px solid #444;
-            background-color: #333; /* Warna latar belakang untuk input */
+            background-color: #444; /* Warna latar belakang untuk input */
             color: #fff; /* Warna teks untuk input */
         }
         button {
@@ -42,18 +39,21 @@
             background-color: #45a049;
         }
         .notification {
+            display: none;
+            position: fixed;
+            top: 10%;
+            left: 50%;
+            transform: translateX(-50%);
             background-color: white;
             color: black;
             padding: 10px;
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: none;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
         }
     </style>
 </head>
 <body>
+    <div class="notification" id="notification">Masih Uji Coba</div>
     <h1>Pengisian Data Bulanan</h1>
     <label for="month">Pilih Bulan:</label>
     <select id="month">
@@ -78,32 +78,23 @@
     <button onclick="saveData()">Simpan ke Excel</button>
     <button onclick="clearData()">Hapus Semua Data</button>
 
-    <div class="notification" id="notification">Masih Uji Coba</div>
-
     <script>
-        // Konfigurasi Firebase
-        const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-            databaseURL: "https://YOUR_PROJECT_ID.firebaseio.com",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_PROJECT_ID.appspot.com",
-            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-            appId: "YOUR_APP_ID"
-        };
-
-        // Inisialisasi Firebase
-        const app = firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
-
         const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+        const monthData = JSON.parse(localStorage.getItem('monthData')) || {};
         const userName = localStorage.getItem('userName');
 
-        // Menampilkan notifikasi
-        document.getElementById('notification').style.display = 'block';
-        setTimeout(() => {
-            document.getElementById('notification').style.display = 'none';
-        }, 15000);
+        monthNames.forEach(month => {
+            if (!monthData[month]) {
+                monthData[month] = [];
+            }
+        });
+
+        if (userName) {
+            alert(`Hai ${userName}, selamat datang!`);
+        } else {
+            alert("Silakan masukkan nama Anda di halaman awal.");
+            window.location.href = 'index'; // Kembali ke halaman input nama jika nama tidak ada
+        }
 
         function addData() {
             const month = document.getElementById('month').value;
@@ -111,13 +102,9 @@
 
             if (data) {
                 const values = data.split('\n').map(d => d.trim()).filter(d => d);
-                const userDataRef = database.ref('data/' + userName + '/' + month);
-
-                values.forEach(value => {
-                    userDataRef.push(value); // Menyimpan data ke Firebase
-                });
-
+                monthData[month].push(...values);
                 document.getElementById('dataInput').value = ''; // Clear input field
+                localStorage.setItem('monthData', JSON.stringify(monthData)); // Simpan ke localStorage
                 alert(`Data ditambahkan untuk bulan ${month}.`);
             } else {
                 alert('Masukkan data yang valid.');
@@ -125,29 +112,47 @@
         }
 
         function saveData() {
-            // Kode untuk menyimpan data ke Excel tetap sama
+            const wb = XLSX.utils.book_new();
+            const wsData = [];
+
+            wsData.push(monthNames);
+
+            const maxLength = Math.max(...Object.values(monthData).map(arr => arr.length));
+
+            for (let i = 0; i < maxLength; i++) {
+                const row = [];
+                monthNames.forEach(month => {
+                    row.push(monthData[month][i] || '');
+                });
+                wsData.push(row);
+            }
+
+            const ws = XLSX.utils.aoa_to_sheet(wsData);
+            XLSX.utils.book_append_sheet(wb, 'Data Bulanan');
+
+            XLSX.writeFile(wb, 'Data RM Rumah Sakit.xlsx'); // Nama file
         }
 
         function clearData() {
             if (confirm("Apakah Anda yakin ingin menghapus semua data?")) {
-                const userDataRef = database.ref('data/' + userName);
-                userDataRef.remove(); // Hapus semua data pengguna
+                monthNames.forEach(month => {
+                    monthData[month] = [];
+                });
+                localStorage.removeItem('monthData');
                 alert("Semua data telah dihapus.");
             }
         }
 
-        // Memuat data saat halaman dimuat
-        function loadData() {
-            const userDataRef = database.ref('data/' + userName);
-            userDataRef.once('value').then(snapshot => {
-                snapshot.forEach(monthSnapshot => {
-                    const monthData = monthSnapshot.val();
-                    console.log(monthData); // Tampilkan data bulan
-                });
-            });
+        // Menampilkan notifikasi
+        function showNotification() {
+            const notification = document.getElementById('notification');
+            notification.style.display = 'block';
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 15000); // Tampilkan selama 15 detik
         }
 
-        window.onload = loadData; // Panggil loadData saat halaman dimuat
+        showNotification(); // Tampilkan notifikasi saat halaman dimuat
     </script>
 </body>
 </html>
