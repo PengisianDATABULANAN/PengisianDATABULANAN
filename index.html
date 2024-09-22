@@ -65,6 +65,7 @@
         #userList {
             list-style-type: none;
             padding: 0;
+            text-align: left; /* Rata kiri untuk daftar */
         }
         #overlay {
             position: fixed;
@@ -94,7 +95,7 @@
     </style>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
-        import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-database.js";
+        import { getDatabase, ref, set, get, child, remove } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyC40GO-c8630zQgfEZmzF66x2QFD4C_9_8",
@@ -144,8 +145,25 @@
                         userList.innerHTML = ''; // Kosongkan daftar sebelum menambahkan
                         for (const user in users) {
                             const li = document.createElement('li');
+                            li.style.display = 'flex'; // Menggunakan flexbox
+                            li.style.justifyContent = 'space-between'; // Memberi jarak antar elemen
+                            li.style.alignItems = 'center'; // Vertikal align center
                             li.textContent = users[user].username; // Menampilkan nama pengguna
-                            userList.appendChild(li);
+                            const deleteButton = document.createElement('button');
+                            deleteButton.textContent = 'Hapus';
+                            deleteButton.style.marginLeft = '10px'; // Jarak antara nama dan tombol hapus
+                            deleteButton.onclick = () => {
+                                remove(ref(db, 'users/' + users[user].username))
+                                .then(() => {
+                                    console.log('Data berhasil dihapus untuk: ' + users[user].username);
+                                    fetchData(); // Ambil data terbaru setelah dihapus
+                                })
+                                .catch((error) => {
+                                    console.error("Error: ", error);
+                                });
+                            };
+                            li.appendChild(deleteButton); // Tambahkan tombol hapus ke list item
+                            userList.appendChild(li); // Tambahkan item ke daftar
                         }
                     } else {
                         console.log("No data available");
