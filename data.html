@@ -13,8 +13,6 @@
             justify-content: center;
             height: 100vh;
             font-family: Arial, sans-serif;
-            background-color: #222; /* Warna latar belakang lebih gelap */
-            color: #eee; /* Warna teks lebih terang */
             background-color: #222;
             color: #eee;
             margin: 0;
@@ -45,11 +43,8 @@
             padding: 15px;
             border-radius: 5px;
             margin-bottom: 20px;
-            display: none; /* Sembunyikan notifikasi secara default */
             display: none;
             position: absolute;
-            top: 20px; /* Jarak dari atas */
-            z-index: 1; /* Pastikan di atas elemen lain */
             top: 20px;
             z-index: 1;
         }
@@ -84,46 +79,32 @@
     <script>
         const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
         const monthData = JSON.parse(localStorage.getItem('monthData')) || {};
-        const userName = localStorage.getItem('userName');
 
-        // Inisialisasi data bulan
         monthNames.forEach(month => {
             if (!monthData[month]) {
                 monthData[month] = [];
             }
         });
 
-        // Menampilkan nama pengguna
-        if (userName) {
-            alert(`Hai ${userName}, selamat datang!`);
-        } else {
-            alert("Silakan masukkan nama Anda di halaman awal.");
-            window.location.href = 'index.html'; // Kembali ke halaman input nama jika nama tidak ada
-        }
-        // Tampilkan notifikasi
         function showNotification() {
             const notification = document.getElementById('notification');
-            notification.style.display = 'block'; // Tampilkan notifikasi
             notification.style.display = 'block';
             setTimeout(() => {
-                notification.style.display = 'none'; // Sembunyikan setelah 15 detik
-            }, 15000); // 15000 ms = 15 detik
                 notification.style.display = 'none';
             }, 15000);
         }
 
-        showNotification(); // Panggil fungsi notifikasi
         showNotification();
 
         function addData() {
             const month = document.getElementById('month').value;
             const data = document.getElementById('dataInput').value.trim();
 
+            console.log('Adding data for month:', month);
+            console.log('Input data:', data);
             if (data) {
                 const values = data.split('\n').map(d => d.trim()).filter(d => d);
                 monthData[month].push(...values);
-                document.getElementById('dataInput').value = ''; // Clear input field
-                localStorage.setItem('monthData', JSON.stringify(monthData)); // Simpan ke localStorage
                 document.getElementById('dataInput').value = '';
                 localStorage.setItem('monthData', JSON.stringify(monthData));
                 alert(`Data ditambahkan untuk bulan ${month}.`);
@@ -135,17 +116,13 @@
         function saveData() {
             const wb = XLSX.utils.book_new();
             const wsData = [];
-            // Menyusun header bulan
             wsData.push(monthNames);
 
-            // Menyusun data untuk satu sheet
-            const maxLength = Math.max(...Object.values(monthData).map(arr => arr.length)); // Mencari panjang maksimum
             const maxLength = Math.max(...Object.values(monthData).map(arr => arr.length));
 
             for (let i = 0; i < maxLength; i++) {
                 const row = [];
                 monthNames.forEach(month => {
-                    row.push(monthData[month][i] || ''); // Menambahkan data atau kosong jika tidak ada
                     row.push(monthData[month][i] || '');
                 });
                 wsData.push(row);
@@ -154,17 +131,15 @@
             const ws = XLSX.utils.aoa_to_sheet(wsData);
             XLSX.utils.book_append_sheet(wb, ws, 'Data Bulanan');
 
-            XLSX.writeFile(wb, 'Data RM Rumah Sakit.xlsx'); // Mengubah nama file
             XLSX.writeFile(wb, 'Data RM Rumah Sakit.xlsx');
+            console.log('File downloaded: Data RM Rumah Sakit.xlsx');
         }
 
         function clearData() {
             if (confirm("Apakah Anda yakin ingin menghapus semua data?")) {
                 monthNames.forEach(month => {
-                    monthData[month] = []; // Kosongkan array untuk setiap bulan
                     monthData[month] = [];
                 });
-                localStorage.removeItem('monthData'); // Hapus data dari localStorage
                 localStorage.removeItem('monthData');
                 alert("Semua data telah dihapus.");
             }
