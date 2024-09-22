@@ -3,79 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pengisian Data Bulanan</title>
+    <title>Data Bulanan</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
-        import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-database.js";
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+            background-color: #222;
+            color: #eee;
+            margin: 0;
+        }
+        h1 {
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        button {
+            font-size: 1.2em;
+            padding: 10px;
+            margin: 10px 0;
+            width: 300px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <h1>Data Bulanan</h1>
+    <button onclick="saveData()">Simpan Data ke Excel</button>
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyC40GO-c8630zQgfEZmzF66x2QFD4C_9_8",
-            authDomain: "pengisiandatabulanan.firebaseapp.com",
-            databaseURL: "https://pengisiandatabulanan-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId: "pengisiandatabulanan",
-            storageBucket: "pengisiandatabulanan.appspot.com",
-            messagingSenderId: "482794556347",
-            appId: "1:482794556347:web:7decfa15407ee9344a529e",
-            measurementId: "G-B4SEEMZV16"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
-
-        const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+    <script>
+        // Ambil data dari localStorage
         const monthData = JSON.parse(localStorage.getItem('monthData')) || {};
-
-        monthNames.forEach(month => {
-            if (!monthData[month]) {
-                monthData[month] = [];
-            }
-        });
-
-        function showNotification() {
-            const notification = document.getElementById('notification');
-            notification.style.display = 'block';
-            setTimeout(() => {
-                notification.style.display = 'none';
-            }, 15000);
-        }
-
-        window.onload = function() {
-            showNotification();
-            fetchData();
-        };
-
-        function fetchData() {
-            const dbRef = ref(db);
-            get(child(dbRef, 'monthData/'))
-                .then((snapshot) => {
-                    if (snapshot.exists()) {
-                        Object.keys(snapshot.val()).forEach(month => {
-                            monthData[month] = snapshot.val()[month];
-                        });
-                        localStorage.setItem('monthData', JSON.stringify(monthData));
-                    }
-                })
-                .catch((error) => {
-                    console.error(error);
-                });
-        }
-
-        function addData() {
-            const month = document.getElementById('month').value;
-            const data = document.getElementById('dataInput').value.trim();
-
-            if (data) {
-                const values = data.split('\n').map(d => d.trim()).filter(d => d);
-                monthData[month].push(...values);
-                document.getElementById('dataInput').value = '';
-                localStorage.setItem('monthData', JSON.stringify(monthData));
-                set(ref(db, 'monthData/' + month), monthData[month]); // Simpan ke Firebase
-                alert(`Data ditambahkan untuk bulan ${month}.`);
-            } else {
-                alert('Masukkan data yang valid.');
-            }
-        }
+        const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
 
         function saveData() {
             const wb = XLSX.utils.book_new();
@@ -98,87 +67,6 @@
             XLSX.writeFile(wb, 'Data RM Rumah Sakit.xlsx');
             console.log('File downloaded: Data RM Rumah Sakit.xlsx');
         }
-
-        function clearData() {
-            if (confirm("Apakah Anda yakin ingin menghapus semua data?")) {
-                monthNames.forEach(month => {
-                    monthData[month] = [];
-                });
-                localStorage.removeItem('monthData');
-                set(ref(db, 'monthData/'), {}); // Hapus data di Firebase
-                alert("Semua data telah dihapus.");
-            }
-        }
     </script>
-    <style>
-        body {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            font-family: Arial, sans-serif;
-            background-color: #222;
-            color: #eee;
-            margin: 0;
-        }
-        h1 {
-            font-weight: bold;
-            margin-bottom: 20px;
-        }
-        select, textarea, button {
-            font-size: 1.2em;
-            padding: 10px;
-            margin: 10px 0;
-            width: 300px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-        }
-        button {
-            background-color: #4CAF50;
-            color: white;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-        .notification {
-            background-color: white;
-            color: black;
-            padding: 15px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-            display: none;
-            position: absolute;
-            top: 20px;
-            z-index: 1;
-        }
-    </style>
-</head>
-<body>
-    <div class="notification" id="notification">Masih Uji Coba</div>
-    <h1>Pengisian Data Bulanan</h1>
-    <label for="month">Pilih Bulan:</label>
-    <select id="month">
-        <option value="Januari">Januari</option>
-        <option value="Februari">Februari</option>
-        <option value="Maret">Maret</option>
-        <option value="April">April</option>
-        <option value="Mei">Mei</option>
-        <option value="Juni">Juni</option>
-        <option value="Juli">Juli</option>
-        <option value="Agustus">Agustus</option>
-        <option value="September">September</option>
-        <option value="Oktober">Oktober</option>
-        <option value="November">November</option>
-        <option value="Desember">Desember</option>
-    </select>
-
-    <br>
-    <textarea id="dataInput" rows="5" placeholder="Masukkan data, pisahkan dengan Enter"></textarea>
-    <br>
-    <button onclick="addData()">Tambah Data</button>
-    <button onclick="saveData()">Simpan ke Excel</button>
-    <button onclick="clearData()">Hapus Semua Data</button>
 </body>
 </html>
