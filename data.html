@@ -9,7 +9,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
         import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-database.js";
 
-        // Konfigurasi Firebase Anda
+        // Konfigurasi Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyC40GO-c8630zQgfEZmzF66x2QFD4C_9_8",
             authDomain: "pengisiandatabulanan.firebaseapp.com",
@@ -174,4 +174,12 @@
         function clearData() {
             if (confirm("Apakah Anda yakin ingin menghapus semua data?")) {
                 monthNames.forEach(month => {
-                    monthData[
+                    monthData[month] = []; // Kosongkan array untuk setiap bulan
+                });
+                localStorage.removeItem('monthData'); // Hapus data dari localStorage
+                alert("Semua data telah dihapus.");
+            }
+        }
+    </script>
+</body>
+</html>
