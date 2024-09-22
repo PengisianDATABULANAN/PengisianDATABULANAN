@@ -70,7 +70,7 @@
     <script type="module">
         // Import Firebase functions
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
-        import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-database.js";
+        import { getDatabase, ref, set, get, child, remove } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-database.js";
 
         // Firebase configuration
         const firebaseConfig = {
@@ -99,7 +99,7 @@
                 .then(() => {
                     console.log('Data berhasil ditambahkan untuk: ' + name);
                     localStorage.setItem('userName', name);
-                    window.location.href = 'data.html'; // Navigasi ke halaman data.html
+                    fetchData(); // Panggil untuk mengambil data terbaru
                 })
                 .catch((error) => {
                     alert("Error: " + error.message);
@@ -121,6 +121,15 @@
                         for (const user in users) {
                             const li = document.createElement('li');
                             li.textContent = users[user].username; // Menampilkan nama pengguna
+                            
+                            // Buat tombol hapus
+                            const deleteButton = document.createElement('button');
+                            deleteButton.textContent = 'Hapus';
+                            deleteButton.onclick = function() {
+                                deleteUser(user);
+                            };
+                            
+                            li.appendChild(deleteButton); // Tambahkan tombol hapus ke list
                             userList.appendChild(li);
                         }
                     } else {
@@ -129,6 +138,18 @@
                 })
                 .catch((error) => {
                     console.error(error);
+                });
+        }
+
+        // Function to delete a user
+        function deleteUser(username) {
+            remove(ref(db, 'users/' + username))
+                .then(() => {
+                    console.log('Data berhasil dihapus untuk: ' + username);
+                    fetchData(); // Refresh daftar pengguna
+                })
+                .catch((error) => {
+                    console.error('Error removing document: ', error);
                 });
         }
 
