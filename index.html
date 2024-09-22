@@ -12,8 +12,8 @@
             justify-content: center;
             height: 100vh;
             font-family: Arial, sans-serif;
-            background-color: #222;
-            color: #eee;
+            background-color: #222; /* Warna latar belakang lebih gelap */
+            color: #eee; /* Warna teks lebih terang */
             margin: 0;
         }
         h1 {
@@ -27,8 +27,8 @@
             width: 300px;
             border-radius: 5px;
             border: 1px solid #444;
-            background-color: #333;
-            color: #fff;
+            background-color: #333; /* Warna latar belakang untuk input */
+            color: #fff; /* Warna teks untuk input */
         }
         button {
             font-size: 1.2em;
@@ -49,21 +49,21 @@
         }
         .watermark {
             position: absolute;
-            top: 10px;
-            left: 10px;
-            font-family: 'Times New Roman';
-            font-size: 18px;
-            color: #aaa;
+            top: 20px;
+            left: 20px;
+            font-size: 1.2em;
+            font-family: "Times New Roman", Times, serif;
+            color: rgba(255, 255, 255, 0.5);
         }
     </style>
 </head>
 <body>
-    <div class="watermark">Created By Rendyseftia</div>
     <div class="container">
         <h1>Input Nama Pengguna</h1>
         <input type="text" id="userName" placeholder="Masukkan nama Anda" />
         <button onclick="submitName()">Kirim</button>
     </div>
+    <div class="watermark">Created By Rendyseftia</div>
 
     <script>
         function submitName() {
