@@ -98,4 +98,8 @@
 
     <script>
         const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
-        const monthData = JSON.parse(localStorage
+        const monthData = JSON.parse(localStorage.getItem('monthData')) || {};
+        const userName = localStorage.getItem('userName');
+
+        // Inisialisasi data bulan
+        monthNames.forEach
