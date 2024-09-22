@@ -65,6 +65,14 @@
         #userList {
             list-style-type: none;
             padding: 0;
+            margin-top: 10px;
+        }
+        #userList li {
+            background: #333;
+            color: #f0f0f0;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
         }
     </style>
     <script type="module">
@@ -73,17 +81,16 @@
         import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
 
         // Firebase configuration
-      const firebaseConfig = {
-  apiKey: "AIzaSyC40GO-c8630zQgfEZmzF66x2QFD4C_9_8",
-  authDomain: "pengisiandatabulanan.firebaseapp.com",
-  databaseURL: "https://pengisiandatabulanan-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "pengisiandatabulanan",
-  storageBucket: "pengisiandatabulanan.appspot.com",
-  messagingSenderId: "482794556347",
-  appId: "1:482794556347:web:5f979a5f806bb2cb4a529e",
-  measurementId: "G-RNN44KPRV4"
-};
-
+        const firebaseConfig = {
+            apiKey: "AIzaSyC40GO-c8630zQgfEZmzF66x2QFD4C_9_8",
+            authDomain: "pengisiandatabulanan.firebaseapp.com",
+            databaseURL: "https://pengisiandatabulanan-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "pengisiandatabulanan",
+            storageBucket: "pengisiandatabulanan.appspot.com",
+            messagingSenderId: "482794556347",
+            appId: "1:482794556347:web:5f979a5f806bb2cb4a529e",
+            measurementId: "G-RNN44KPRV4"
+        };
 
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
@@ -93,16 +100,25 @@
         window.submitName = function() {
             const name = document.getElementById('userName').value.trim();
             if (name) {
-                // Save name to Firebase
-                set(ref(db, 'users/' + name), {
-                    username: name
-                })
-                .then(() => {
-                    localStorage.setItem('userName', name);
-                    fetchData(); // Panggil untuk mengambil data terbaru
-                })
-                .catch((error) => {
-                    alert("Error: " + error.message);
+                // Cek apakah nama pengguna sudah ada
+                const dbRef = ref(db);
+                get(child(dbRef, 'users/' + name)).then((snapshot) => {
+                    if (snapshot.exists()) {
+                        alert("Nama pengguna sudah ada. Silakan pilih nama lain.");
+                    } else {
+                        // Save name to Firebase
+                        set(ref(db, 'users/' + name), {
+                            username: name
+                        })
+                        .then(() => {
+                            localStorage.setItem('userName', name);
+                            fetchData(); // Panggil untuk mengambil data terbaru
+                            alert("Nama pengguna berhasil ditambahkan!");
+                        })
+                        .catch((error) => {
+                            alert("Error: " + error.message);
+                        });
+                    }
                 });
             } else {
                 alert("Silakan masukkan nama Anda.");
