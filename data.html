@@ -15,22 +15,22 @@
             justify-content: center;
             height: 100vh;
             font-family: Arial, sans-serif;
-            background-color: #222; /* Warna latar belakang lebih gelap */
-            color: #eee; /* Warna teks lebih terang */
+            background-color: #222;
+            color: #eee;
         }
         h1 {
             font-weight: bold;
             margin-bottom: 20px;
         }
         select, textarea, button {
-            font-size: 1.5em; /* Ukuran font lebih besar */
+            font-size: 1.5em;
             padding: 10px;
             margin: 10px 0;
             width: 300px;
             border-radius: 5px;
             border: 1px solid #444;
-            background-color: #333; /* Warna latar belakang untuk input */
-            color: #fff; /* Warna teks untuk input */
+            background-color: #333;
+            color: #fff;
         }
         button {
             background-color: #4CAF50;
@@ -82,7 +82,6 @@
     <div class="notification" id="notification">Masih Uji Coba</div>
 
     <script>
-        // Konfigurasi Firebase Anda
         const firebaseConfig = {
             apiKey: "AIzaSyC40GO-c8630zQgfEZmzF66x2QFD4C_9_8",
             authDomain: "pengisiandatabulanan.firebaseapp.com",
@@ -94,32 +93,26 @@
             measurementId: "G-RNN44KPRV4"
         };
 
-        // Inisialisasi Firebase
         const app = firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
         const monthData = {};
         const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
 
-        // Mengambil data dari Firebase saat halaman dimuat
         window.onload = function() {
             monthNames.forEach(month => {
                 database.ref('data/' + month).once('value').then((snapshot) => {
                     const data = snapshot.val();
-                    if (data) {
-                        monthData[month] = data;
-                    } else {
-                        monthData[month] = [];
-                    }
+                    monthData[month] = data || [];
+                    console.log(`Data untuk bulan ${month}:`, monthData[month]);
                 });
             });
 
-            // Menampilkan notifikasi
             const notification = document.getElementById('notification');
             notification.style.display = 'block';
             setTimeout(() => {
                 notification.style.display = 'none';
-            }, 15000); // Tampilkan selama 15 detik
+            }, 15000);
         };
 
         function addData() {
@@ -129,9 +122,15 @@
             if (data) {
                 const values = data.split('\n').map(d => d.trim()).filter(d => d);
                 monthData[month].push(...values);
-                document.getElementById('dataInput').value = ''; // Clear input field
-                database.ref('data/' + month).set(monthData[month]); // Simpan data ke Firebase
-                alert(`Data ditambahkan untuk bulan ${month}.`);
+                document.getElementById('dataInput').value = '';
+                console.log(`Data yang ditambahkan untuk bulan ${month}:`, values);
+                database.ref('data/' + month).set(monthData[month])
+                    .then(() => {
+                        alert(`Data ditambahkan untuk bulan ${month}.`);
+                    })
+                    .catch(error => {
+                        console.error("Error saving data: ", error);
+                    });
             } else {
                 alert('Masukkan data yang valid.');
             }
@@ -162,10 +161,9 @@
             link.href = URL.createObjectURL(blob);
             link.download = 'Data RM Rumah Sakit.xlsx';
             link.click();
-            URL.revokeObjectURL(link.href); // Membebaskan URL setelah unduhan
+            URL.revokeObjectURL(link.href);
         }
 
-        // Fungsi untuk mengonversi string ke ArrayBuffer
         function s2ab(s) {
             const buf = new ArrayBuffer(s.length);
             const view = new Uint8Array(buf);
@@ -178,10 +176,15 @@
         function clearData() {
             if (confirm("Apakah Anda yakin ingin menghapus semua data?")) {
                 monthNames.forEach(month => {
-                    monthData[month] = []; // Kosongkan array untuk setiap bulan
-                    database.ref('data/' + month).set([]); // Hapus data dari Firebase
+                    monthData[month] = [];
+                    database.ref('data/' + month).set([])
+                        .then(() => {
+                            alert("Semua data telah dihapus.");
+                        })
+                        .catch(error => {
+                            console.error("Error clearing data: ", error);
+                        });
                 });
-                alert("Semua data telah dihapus.");
             }
         }
     </script>
