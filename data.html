@@ -13,9 +13,8 @@
             justify-content: center;
             height: 100vh;
             font-family: Arial, sans-serif;
-            background-color: #222; /* Warna latar belakang lebih gelap */
-            color: #eee; /* Warna teks lebih terang */
-            margin: 0;
+            background-color: #333333; /* Warna latar belakang lebih gelap */
+            color: #ffffff; /* Warna teks lebih terang */
         }
         h1 {
             font-weight: bold;
@@ -28,6 +27,11 @@
             width: 300px;
             border-radius: 5px;
             border: 1px solid #ccc;
+            background-color: #444444; /* Warna latar belakang untuk elemen input */
+            color: #ffffff; /* Warna teks untuk elemen input */
+        }
+        textarea {
+            font-size: 1.5em; /* Ukuran font lebih besar untuk textarea */
         }
         button {
             background-color: #4CAF50;
@@ -37,75 +41,49 @@
         button:hover {
             background-color: #45a049;
         }
-        .notification {
-            background-color: white;
-            color: black;
-            padding: 15px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-            display: none; /* Sembunyikan notifikasi secara default */
-            position: absolute;
-            top: 20px; /* Jarak dari atas */
-            z-index: 1; /* Pastikan di atas elemen lain */
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
     </style>
 </head>
 <body>
-    <div class="notification" id="notification">Masih Uji Coba</div>
     <h1>Pengisian Data Bulanan</h1>
-    <label for="month">Pilih Bulan:</label>
-    <select id="month">
-        <option value="Januari">Januari</option>
-        <option value="Februari">Februari</option>
-        <option value="Maret">Maret</option>
-        <option value="April">April</option>
-        <option value="Mei">Mei</option>
-        <option value="Juni">Juni</option>
-        <option value="Juli">Juli</option>
-        <option value="Agustus">Agustus</option>
-        <option value="September">September</option>
-        <option value="Oktober">Oktober</option>
-        <option value="November">November</option>
-        <option value="Desember">Desember</option>
-    </select>
+    <div class="container">
+        <textarea id="dataInput" name="data_input" rows="5" placeholder="Masukkan data, pisahkan dengan Enter"></textarea>
+        
+        <label for="month">Pilih Bulan:</label>
+        <select id="month" name="month">
+            <option value="Januari">Januari</option>
+            <option value="Februari">Februari</option>
+            <option value="Maret">Maret</option>
+            <option value="April">April</option>
+            <option value="Mei">Mei</option>
+            <option value="Juni">Juni</option>
+            <option value="Juli">Juli</option>
+            <option value="Agustus">Agustus</option>
+            <option value="September">September</option>
+            <option value="Oktober">Oktober</option>
+            <option value="November">November</option>
+            <option value="Desember">Desember</option>
+        </select>
 
-    <br>
-    <textarea id="dataInput" rows="5" placeholder="Masukkan data, pisahkan dengan Enter"></textarea>
-    <br>
-    <button onclick="addData()">Tambah Data</button>
-    <button onclick="saveData()">Simpan ke Excel</button>
-    <button onclick="clearData()">Hapus Semua Data</button>
+        <button type="button" onclick="addData()">Tambah Data</button>
+        <button type="button" onclick="saveData()">Simpan ke Excel</button>
+        <button type="button" onclick="clearData()">Hapus Semua Data</button>
+    </div>
 
     <script>
-        const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
         const monthData = JSON.parse(localStorage.getItem('monthData')) || {};
-        const userName = localStorage.getItem('userName');
 
         // Inisialisasi data bulan
+        const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
         monthNames.forEach(month => {
             if (!monthData[month]) {
                 monthData[month] = [];
             }
         });
-
-        // Menampilkan nama pengguna
-        if (userName) {
-            alert(`Hai ${userName}, selamat datang!`);
-        } else {
-            alert("Silakan masukkan nama Anda di halaman awal.");
-            window.location.href = 'index.html'; // Kembali ke halaman input nama jika nama tidak ada
-        }
-
-        // Tampilkan notifikasi
-        function showNotification() {
-            const notification = document.getElementById('notification');
-            notification.style.display = 'block'; // Tampilkan notifikasi
-            setTimeout(() => {
-                notification.style.display = 'none'; // Sembunyikan setelah 15 detik
-            }, 15000); // 15000 ms = 15 detik
-        }
-
-        showNotification(); // Panggil fungsi notifikasi
 
         function addData() {
             const month = document.getElementById('month').value;
@@ -125,25 +103,21 @@
         function saveData() {
             const wb = XLSX.utils.book_new();
             const wsData = [];
-
-            // Menyusun header bulan
             wsData.push(monthNames);
 
-            // Menyusun data untuk satu sheet
-            const maxLength = Math.max(...Object.values(monthData).map(arr => arr.length)); // Mencari panjang maksimum
+            const maxLength = Math.max(...Object.values(monthData).map(arr => arr.length));
 
             for (let i = 0; i < maxLength; i++) {
                 const row = [];
                 monthNames.forEach(month => {
-                    row.push(monthData[month][i] || ''); // Menambahkan data atau kosong jika tidak ada
+                    row.push(monthData[month][i] || '');
                 });
                 wsData.push(row);
             }
 
             const ws = XLSX.utils.aoa_to_sheet(wsData);
             XLSX.utils.book_append_sheet(wb, ws, 'Data Bulanan');
-
-            XLSX.writeFile(wb, 'Data RM Rumah Sakit.xlsx'); // Mengubah nama file
+            XLSX.writeFile(wb, 'Data RM Rumah Sakit.xlsx');
         }
 
         function clearData() {
@@ -151,7 +125,7 @@
                 monthNames.forEach(month => {
                     monthData[month] = []; // Kosongkan array untuk setiap bulan
                 });
-                localStorage.removeItem('monthData'); // Hapus data dari localStorage
+                localStorage.setItem('monthData', JSON.stringify(monthData)); // Simpan perubahan ke localStorage
                 alert("Semua data telah dihapus.");
             }
         }
