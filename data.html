@@ -6,8 +6,9 @@
     <title>Pengisian Data Bulanan</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
-        import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-database.js";
+        // Impor Firebase modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-app.js";
+        import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-database.js";
 
         // Konfigurasi Firebase
         const firebaseConfig = {
@@ -23,7 +24,7 @@
 
         // Inisialisasi Firebase
         const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app); // Inisialisasi database di sini
+        const db = getDatabase(app); // Inisialisasi database
 
         // Fungsi untuk menyimpan data ke Firebase
         function saveDataToFirebase(month, values) {
